@@ -16,8 +16,18 @@ Including another URLconf
 """
 
 from django.contrib import admin
+from django.http import HttpResponse
 from django.urls import path
+
+from binny_buddy.apps.core.views import api
+
+
+def health_view(request):
+    return HttpResponse(status=200)
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("health", health_view),
+    path("api-public/v1/", api.urls),
 ]
