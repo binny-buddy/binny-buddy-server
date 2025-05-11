@@ -59,6 +59,21 @@ class ImageGenerationService:
             )
             return {"success": False, "file": None}
 
+    def generate_texture(self, model: str, asset_type: str):
+        url = f"{settings.AI_SERVER_URL}/assets"
+        response = requests.get(url, params={"model": model, "asset_type": asset_type})
+
+        try:
+            response.raise_for_status()
+            return response.json()
+
+        except requests.HTTPError as exc:
+            logging.error(
+                f"[generate_texture] AI server responded with {exc.response.status_code}",
+                exc_info=exc,
+            )
+            return {"success": False, "file": None}
+
 
 image_detection_service = ImageDetectionService()
 image_generation_service = ImageGenerationService()

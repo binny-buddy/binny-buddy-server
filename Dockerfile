@@ -1,8 +1,10 @@
 FROM public.ecr.aws/docker/library/python:3.12-slim AS build
 
 RUN apt-get update && apt-get install -y \
+    python3-dev \
+    default-libmysqlclient-dev \
     build-essential \
-    libpq-dev \
+    pkg-config \
     curl \
     && rm -rf /var/lib/apt/lists/*
 

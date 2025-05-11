@@ -24,8 +24,11 @@ def detect(request, file: UploadedFile) -> DetectionResponse:
 def generate(
     request,
     form: Query[GenerationForm],
-    file: UploadedFile,
+    file: UploadedFile | None = None,
 ) -> DetectionResponse:
-    return image_generation_service.generate_texture_from_uploaded_file(
-        form.model, form.asset_type, file
-    )
+    if file:
+        return image_generation_service.generate_texture_from_uploaded_file(
+            form.model, form.asset_type, file
+        )
+
+    return image_generation_service.generate_texture(form.model, form.asset_type)
