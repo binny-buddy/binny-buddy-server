@@ -40,7 +40,7 @@ class Request(HttpRequest):
 
 auth = BinnyBuddyAuth()
 
-api = NinjaAPI(auth=auth)
+api = NinjaAPI(auth=auth, csrf=False)
 
 
 @api.get("/home")
