@@ -25,9 +25,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-z0z!r5@!-#i1q5_k!_983nk2y)ilf3=mmao13fq^j-dukc%!yy"
 
 # SECURITY WARNING: don't run with debug turned on in production!
+CI = bool(os.environ.get("CI"))
 DEBUG = os.environ.get("ENV", "development") == "development"
 
-if DEBUG:
+if not CI and DEBUG:
     from dotenv import load_dotenv
 
     load_dotenv()

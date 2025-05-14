@@ -38,6 +38,7 @@ COPY --from=build /usr/local/lib/python3.12/site-packages /usr/local/lib/python3
 COPY binny_buddy/ /app/binny_buddy
 COPY manage.py .env /app/
 
+ARG CI=1
 RUN python -OO manage.py check --deploy || exit 1
 
 EXPOSE 8000
