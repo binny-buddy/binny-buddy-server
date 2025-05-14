@@ -14,7 +14,7 @@ dependencies = [
     "gunicorn (>=23.0.0,<23.1.0)",
     "django-ninja (==1.4.1)",
     "requests (==2.32.3)",
-    "mysqlclient (==2.2.4)"
+    "mysqlclient (==2.2.4)",
 ]
 
 
@@ -24,3 +24,4 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "~0.11.5"
+python-dotenv = "~1.1.0"
