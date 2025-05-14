@@ -88,7 +88,7 @@ class RewardHistorySchema(Schema):
 
     @computed_field
     def is_level_up(self) -> bool | None:
-        if not self.binny or not self.earned_xp:
+        if not self.binny or self.earned_xp is None:
             return None
         return self.binny.level > get_level_by_xp(self.binny.xp - self.earned_xp)
 
