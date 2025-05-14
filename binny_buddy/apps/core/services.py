@@ -165,18 +165,7 @@ class RewardService:
             return reward_history
 
         with transaction.atomic():
-            collection = user.collection_set.first()
-
             binny_type = BinnyType.from_value(detected_object["label"])
-            binny, is_created = Binny.objects.update_or_create(
-                binny_type=binny_type,
-                collection=collection,
-                defaults={"xp": F("xp") + Value(self.REWARD_XP)},
-                create_defaults={"name": "Binny", "xp": 0},
-            )
-            binny.refresh_from_db()
-            earned_xp = 0 if is_created else self.REWARD_XP
-
             detection_result = DetectionResult.objects.create(
                 is_clean=detected_object["status"] == "clean",
                 confidence=detected_object["confidence"],
@@ -184,18 +173,33 @@ class RewardService:
                 how_to_recycle=detected_object["how_to_recycle"],
             )
 
-            reward_history.detection_result = detection_result
-            reward_history.binny = binny
-            reward_history.is_binny_created = is_created
-            reward_history.earned_xp = earned_xp
-            reward_history.save(
-                update_fields=[
-                    "detection_result",
-                    "binny",
-                    "earned_xp",
-                    "is_binny_created",
-                ]
-            )
+            if not detection_result.is_clean:
+                reward_history.detection_result = detection_result
+                reward_history.save(update_fields=["detection_result"])
+
+            else:
+                collection = user.collection_set.first()
+                binny, is_created = Binny.objects.update_or_create(
+                    binny_type=binny_type,
+                    collection=collection,
+                    defaults={"xp": F("xp") + Value(self.REWARD_XP)},
+                    create_defaults={"name": "Binny", "xp": 0},
+                )
+                binny.refresh_from_db()
+                earned_xp = 0 if is_created else self.REWARD_XP
+
+                reward_history.binny = binny
+                reward_history.detection_result = detection_result
+                reward_history.is_binny_created = is_created
+                reward_history.earned_xp = earned_xp
+                reward_history.save(
+                    update_fields=[
+                        "detection_result",
+                        "binny",
+                        "earned_xp",
+                        "is_binny_created",
+                    ]
+                )
 
         return reward_history
 
