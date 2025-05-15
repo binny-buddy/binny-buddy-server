@@ -1,3 +1,4 @@
+import datetime
 import enum
 import uuid
 from typing import List, Optional
@@ -64,6 +65,9 @@ class BinnySchema(Schema):
     name: str
     xp: int
 
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
+
     @computed_field
     def level(self) -> int:
         return get_level_by_xp(self.xp)
@@ -85,6 +89,9 @@ class RewardHistorySchema(Schema):
     binny: BinnySchema | None
     is_binny_created: bool | None
     earned_xp: int | None
+
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
 
     @computed_field
     def is_level_up(self) -> bool | None:

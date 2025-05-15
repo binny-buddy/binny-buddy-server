@@ -40,33 +40,34 @@ class Request(HttpRequest):
 
 auth = BinnyBuddyAuth(csrf=False)
 
-api = NinjaAPI(auth=auth)
+api = NinjaAPI(
+    version="v1",
+    title="Binny Buddy Public API",
+    urls_namespace="public-api-v1",
+    auth=auth,
+)
 
 
-@api.get("/home")
-def home(request: Request) -> HomeSchema:
+@api.get("/home", response=HomeSchema)
+def home(request: Request):
     collection_id = request.auth.collection_set.first().pk
     recent_reward_histories = RewardHistory.objects.filter(
         created_at__gte=timezone.now() - datetime.timedelta(days=30)
     ).order_by("-created_at")
-    return HomeSchema.model_validate(
-        {
-            "user": request.auth,
-            "collection_id": collection_id,
-            "recent_reward_histories": recent_reward_histories,
-        }
-    )
+    return {
+        "user": request.auth,
+        "collection_id": collection_id,
+        "recent_reward_histories": recent_reward_histories,
+    }
 
 
-@api.post("/request-reward")
+@api.post("/request-reward", response=RewardHistorySchema)
 def request_reward(request: Request, file: UploadedFile) -> RewardHistorySchema:
-    return RewardHistorySchema.model_validate(
-        reward_service.request_reward_from_file(request.auth, file)
-    )
+    return reward_service.request_reward_from_file(request.auth, file)
 
 
-@api.get("/reward-history/{reward_history_id}")
-def reward_history(request: Request, reward_history_id: int) -> RewardHistorySchema:
+@api.get("/reward-history/{reward_history_id}", response=RewardHistorySchema)
+def reward_history(request: Request, reward_history_id: int):
     reward_history = RewardHistory.objects.filter(
         pk=reward_history_id, user=request.auth
     ).first()
@@ -74,26 +75,26 @@ def reward_history(request: Request, reward_history_id: int) -> RewardHistorySch
     if not reward_history:
         raise HttpError(404, "Not Found")
 
-    return RewardHistorySchema.model_validate(reward_history)
+    return reward_history
 
 
-@api.get("/file/{file_id}")
-def file(request: Request, file_id: str) -> FileSchema:
+@api.get("/file/{file_id}", response=FileSchema)
+def file(request: Request, file_id: str):
     file = File.objects.filter(pk=file_id, user=request.auth).first()
 
     if not file:
         raise HttpError(404, "Not Found")
 
-    return FileSchema(
-        uuid=file.uuid,
-        name=file.name,
-        content_type=file.content_type,
-        data=base64.b64encode(file.blob).decode("utf-8"),
-    )
+    return {
+        "uuid": file.uuid,
+        "name": file.name,
+        "content_type": file.content_type,
+        "data": base64.b64encode(file.blob).decode("utf-8"),
+    }
 
 
-@api.get("/collection/{collection_id}")
-def collection(request: Request, collection_id: int) -> BinnyCollectionSchema:
+@api.get("/collection/{collection_id}", response=BinnyCollectionSchema)
+def collection(request: Request, collection_id: int):
     collection = BinnyCollection.objects.filter(
         pk=collection_id, user=request.auth
     ).first()
@@ -103,21 +104,21 @@ def collection(request: Request, collection_id: int) -> BinnyCollectionSchema:
 
     binny_list = Binny.objects.filter(collection=collection).order_by("-created_at")
 
-    return BinnyCollectionSchema(id=collection.pk, binny_list=binny_list)
+    return {"id": collection.pk, "binny_list": binny_list}
 
 
-@api.get("/binny/{binny_id}")
-def binny(request: Request, binny_id: int) -> BinnySchema:
+@api.get("/binny/{binny_id}", response=BinnySchema)
+def binny(request: Request, binny_id: int):
     binny = Binny.objects.filter(pk=binny_id, collection__user=request.auth).first()
 
     if not binny:
         raise HttpError(404, "Not Found")
 
-    return BinnySchema.model_validate(binny)
+    return binny
 
 
-@api.patch("/binny/{binny_id}")
-def binny_patch(request: Request, binny_id: int, name: str) -> BinnySchema:
+@api.patch("/binny/{binny_id}", response=BinnySchema)
+def binny_patch(request: Request, binny_id: int, name: str):
     binny = Binny.objects.filter(pk=binny_id, collection__user=request.auth).first()
 
     if not binny:
@@ -126,4 +127,4 @@ def binny_patch(request: Request, binny_id: int, name: str) -> BinnySchema:
     binny.name = name
     binny.save(update_fields=["name"])
 
-    return BinnySchema.model_validate(binny)
+    return binny
