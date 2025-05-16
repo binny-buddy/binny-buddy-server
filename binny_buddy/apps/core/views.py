@@ -144,3 +144,8 @@ def binny_patch(request: Request, binny_id: int, name: str):
     binny.save(update_fields=["name"])
 
     return binny
+
+
+@api.get("/binny-purge")
+def binny_purge(request: Request):
+    Binny.objects.filter(collection__user=request.auth).delete()

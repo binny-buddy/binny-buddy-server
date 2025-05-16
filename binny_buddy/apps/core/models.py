@@ -39,7 +39,7 @@ class BinnyUser(TimestampedModel):
 
 class File(TimestampedModel):
     uuid = models.UUIDField(primary_key=True)
-    user = models.ForeignKey(BinnyUser, on_delete=models.DO_NOTHING)
+    user = models.ForeignKey(BinnyUser, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     content_type = models.CharField(max_length=255, null=True)
     blob = models.BinaryField()
@@ -51,7 +51,7 @@ class File(TimestampedModel):
 class BinnyCollection(TimestampedModel):
     user = models.ForeignKey(
         BinnyUser,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.CASCADE,
         related_name="collection_set",
         related_query_name="collection",
     )
@@ -69,7 +69,7 @@ class BinnyTexture(TimestampedModel):
 
 class Binny(TimestampedModel):
     binny_type = models.CharField(max_length=100, choices=BinnyType.choices)
-    collection = models.ForeignKey(BinnyCollection, on_delete=models.DO_NOTHING)
+    collection = models.ForeignKey(BinnyCollection, on_delete=models.CASCADE)
 
     name = models.CharField(max_length=100)
     xp = models.BigIntegerField(default=0)
@@ -103,15 +103,13 @@ class DetectionResult(TimestampedModel):
 
 
 class RewardHistory(TimestampedModel):
-    user = models.ForeignKey(BinnyUser, on_delete=models.DO_NOTHING)
-    file = models.ForeignKey(File, on_delete=models.DO_NOTHING, null=True)
+    user = models.ForeignKey(BinnyUser, on_delete=models.CASCADE)
+    file = models.ForeignKey(File, on_delete=models.CASCADE, null=True)
     detection_result = models.ForeignKey(
-        DetectionResult, on_delete=models.DO_NOTHING, null=True
+        DetectionResult, on_delete=models.CASCADE, null=True
     )
 
-    binny = models.ForeignKey(
-        Binny, on_delete=models.DO_NOTHING, default=None, null=True
-    )
+    binny = models.ForeignKey(Binny, on_delete=models.CASCADE, default=None, null=True)
     is_binny_created = models.BooleanField(default=None, null=True)
     earned_xp = models.BigIntegerField(default=None, null=True)
 
