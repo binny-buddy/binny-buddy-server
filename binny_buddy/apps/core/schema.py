@@ -61,6 +61,7 @@ class BinnySchema(Schema):
     binny_type: BinnyTypeEnum
     name: str
     xp: int
+    level: int
 
     created_at: datetime.datetime
     updated_at: datetime.datetime
