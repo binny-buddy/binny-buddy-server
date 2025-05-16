@@ -2,6 +2,8 @@
 
 from django.db import models
 
+from binny_buddy.apps.core.utils import get_level_by_xp
+
 
 class TimestampedModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -72,6 +74,20 @@ class Binny(TimestampedModel):
     name = models.CharField(max_length=100)
     xp = models.BigIntegerField(default=0)
 
+    @property
+    def level(self) -> int:
+        return get_level_by_xp(self.xp)
+
+    @property
+    def reward_count(self):
+        return len(
+            [
+                reward_history
+                for reward_history in self.rewardhistory_set.all()
+                if reward_history.is_binny_created or reward_history.earned_xp
+            ]
+        )
+
     class Meta:
         db_table = "binny_buddy"
 
@@ -98,6 +114,12 @@ class RewardHistory(TimestampedModel):
     )
     is_binny_created = models.BooleanField(default=None, null=True)
     earned_xp = models.BigIntegerField(default=None, null=True)
+
+    @property
+    def is_level_up(self) -> bool | None:
+        if not self.binny or self.earned_xp is None:
+            return None
+        return self.binny.level > get_level_by_xp(self.binny.xp - self.earned_xp)
 
     class Meta:
         db_table = "reward_history"

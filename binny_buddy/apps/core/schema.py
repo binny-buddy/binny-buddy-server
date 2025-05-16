@@ -3,9 +3,6 @@ import enum
 import uuid
 from typing import List, Optional
 from ninja import Schema
-from pydantic import computed_field
-
-from binny_buddy.apps.core.services import get_level_by_xp
 
 
 class BinnyTypeEnum(str, enum.Enum):
@@ -67,10 +64,7 @@ class BinnySchema(Schema):
 
     created_at: datetime.datetime
     updated_at: datetime.datetime
-
-    @computed_field
-    def level(self) -> int:
-        return get_level_by_xp(self.xp)
+    reward_count: int
 
 
 class DetectionResultSchema(Schema):
@@ -93,11 +87,7 @@ class RewardHistorySchema(Schema):
     created_at: datetime.datetime
     updated_at: datetime.datetime
 
-    @computed_field
-    def is_level_up(self) -> bool | None:
-        if not self.binny or self.earned_xp is None:
-            return None
-        return self.binny.level > get_level_by_xp(self.binny.xp - self.earned_xp)
+    is_level_up: bool | None
 
 
 class BinnyCollectionSchema(Schema):

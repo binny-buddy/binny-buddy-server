@@ -51,9 +51,11 @@ api = NinjaAPI(
 @api.get("/home", response=HomeSchema)
 def home(request: Request):
     collection_id = request.auth.collection_set.first().pk
-    recent_reward_histories = RewardHistory.objects.filter(
-        created_at__gte=timezone.now() - datetime.timedelta(days=30)
-    ).order_by("-created_at")
+    recent_reward_histories = (
+        RewardHistory.objects.select_related("binny")
+        .filter(created_at__gte=timezone.now() - datetime.timedelta(days=30))
+        .order_by("-created_at")
+    )
     return {
         "user": request.auth,
         "collection_id": collection_id,
@@ -68,9 +70,11 @@ def request_reward(request: Request, file: UploadedFile) -> RewardHistorySchema:
 
 @api.get("/reward-history/{reward_history_id}", response=RewardHistorySchema)
 def reward_history(request: Request, reward_history_id: int):
-    reward_history = RewardHistory.objects.filter(
-        pk=reward_history_id, user=request.auth
-    ).first()
+    reward_history = (
+        RewardHistory.objects.select_related("binny")
+        .filter(pk=reward_history_id, user=request.auth)
+        .first()
+    )
 
     if not reward_history:
         raise HttpError(404, "Not Found")
@@ -102,14 +106,22 @@ def collection(request: Request, collection_id: int):
     if not collection:
         raise HttpError(404, "Not Found")
 
-    binny_list = Binny.objects.filter(collection=collection).order_by("-created_at")
+    binny_list = (
+        Binny.objects.prefetch_related("rewardhistory_set")
+        .filter(collection=collection)
+        .order_by("-created_at")
+    )
 
     return {"id": collection.pk, "binny_list": binny_list}
 
 
 @api.get("/binny/{binny_id}", response=BinnySchema)
 def binny(request: Request, binny_id: int):
-    binny = Binny.objects.filter(pk=binny_id, collection__user=request.auth).first()
+    binny = (
+        Binny.objects.prefetch_related("rewardhistory_set")
+        .filter(pk=binny_id, collection__user=request.auth)
+        .first()
+    )
 
     if not binny:
         raise HttpError(404, "Not Found")
@@ -119,7 +131,11 @@ def binny(request: Request, binny_id: int):
 
 @api.patch("/binny/{binny_id}", response=BinnySchema)
 def binny_patch(request: Request, binny_id: int, name: str):
-    binny = Binny.objects.filter(pk=binny_id, collection__user=request.auth).first()
+    binny = (
+        Binny.objects.prefetch_related("rewardhistory_set")
+        .filter(pk=binny_id, collection__user=request.auth)
+        .first()
+    )
 
     if not binny:
         raise HttpError(404, "Not Found")
