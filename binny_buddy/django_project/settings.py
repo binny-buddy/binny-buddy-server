@@ -87,16 +87,16 @@ WSGI_APPLICATION = "binny_buddy.django_project.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.mysql",
+        "ENGINE": "django.db.backends.postgresql",
         "NAME": os.environ.get("DB_NAME"),
         "USER": os.environ.get("DB_USER"),
         "PASSWORD": os.environ.get("DB_PASSWORD"),
         "HOST": os.environ.get("DB_HOST"),
         "PORT": os.environ.get("DB_PORT"),
-        "OPTIONS": {
-            "charset": "utf8mb4",
-            "init_command": "SET time_zone='+09:00'",
-        },
+        # "OPTIONS": { # support for MySQL
+        #     "charset": "utf8mb4",
+        #     "init_command": "SET time_zone='+09:00'",
+        # },
         "CONN_MAX_AGE": 30,
         "CONN_HEALTH_CHECKS": True,
     }
